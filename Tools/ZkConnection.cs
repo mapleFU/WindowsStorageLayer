@@ -13,7 +13,7 @@ namespace WindowsStorageLayer.Tools
 
 //        private static readonly int Counter = PeriodicTaskConfig.SetTimer();
         // TODO: specific machine on this
-        private static ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost");
+        private static ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("maplewish.cn:6400");
         
         public static IDatabaseAsync Db
         {
