@@ -1,5 +1,8 @@
 using System;
 using System.IO;
+using System.IO.Compression;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
@@ -15,19 +18,50 @@ namespace WindowsStorageLayer.Controllers
         // GET
         [Route("temp/{uuid}")]
         [HttpPut]
-        public async Task<string> MoveToPersist([FromUri] string uuid)
+        public async Task<IHttpActionResult> MoveToPersist([FromUri] string uuid)
         {
-            throw new NotImplementedException();
-            return "hello, world";
+            var s = await ZkConnection.Db.StringGetAsync(uuid);
+            
+            if (s.IsNull)
+            {
+                return NotFound();
+            }
+            
+            var o = JsonConvert.DeserializeObject<RedisUuidMessage>(s.ToString());
+
+            string dataFilePath = Path.Combine("data", "temp", uuid);
+            
+            if (!File.Exists(dataFilePath))
+            {
+                return BadRequest();
+            }
+            var src = File.OpenRead(dataFilePath);
+            string destFilePath = Path.Combine("data", o.FileHash);
+            string destFilePathGz = destFilePath + ".gz";
+            var dest = File.Create(destFilePath);
+//            var dest = new GZipStream(File.Create(destFilePathGz), CompressionMode.Compress);
+            await src.CopyToAsync(dest);
+            return Ok();
         }
 
         [Route("temp/{uuid}")]
         [HttpPatch]
-        public async Task<string> UploadData([FromUri] string uuid)
+        public async Task<IHttpActionResult> UploadData([FromUri] string uuid)
         {
+           
+            var s = await ZkConnection.Db.StringGetAsync(uuid);
+            
+            if (s.IsNull)
+            {
+                return NotFound();
+            }
+            
+            var o = JsonConvert.DeserializeObject<RedisUuidMessage>(s.ToString());
             var dataStream = await Request.Content.ReadAsStreamAsync();
-            throw new NotImplementedException();
-            return "hello, world";
+            var new_fs = File.Create(Path.Combine("data", "temp", o.Uid));
+            await dataStream.CopyToAsync(new_fs);
+            // TODO: add checker
+            return Ok();
         }
 
         [Route("data/exists/{hash}")]
@@ -35,7 +69,7 @@ namespace WindowsStorageLayer.Controllers
         public async Task<bool> CheckDataExists([FromUri] string hash)
         {
             string dataFilePath = Path.Combine("data", hash);
-            string zipDataFilePath = dataFilePath + ".zip";
+            string zipDataFilePath = dataFilePath + ".gz";
             return File.Exists(dataFilePath) || File.Exists(zipDataFilePath);
         }
 
@@ -44,7 +78,7 @@ namespace WindowsStorageLayer.Controllers
         public async Task<IHttpActionResult> TempFileDeclear([FromUri] string hash, [FromBody] PostBody postBody)
         {
             string dataFilePath = Path.Combine("data", hash);
-            string zipDataFilePath = dataFilePath + ".zip";
+            string zipDataFilePath = dataFilePath + ".gz";
             if (File.Exists(dataFilePath) || File.Exists(zipDataFilePath))
             {
                 return BadRequest("Duplicate");
@@ -67,14 +101,29 @@ namespace WindowsStorageLayer.Controllers
         public async Task<IHttpActionResult> GetFileWithHash([FromUri] string hash)
         {
             string dataFilePath = Path.Combine("data", hash);
-            string zipDataFilePath = dataFilePath + ".zip";
+            string zipDataFilePath = dataFilePath + ".gz";
             if (!(File.Exists(dataFilePath) || File.Exists(zipDataFilePath)))
             {
                 return NotFound();
             }
+
             
-            // TODO: change the interface frontend for this
-            throw new NotImplementedException();
+           
+            HttpResponseMessage result = new HttpResponseMessage(HttpStatusCode.OK);
+            if (File.Exists(dataFilePath))
+            {
+                var stream = File.OpenRead(dataFilePath);
+//            var gZipStream = new GZipStream(stream, CompressionMode.Decompress);
+//            result.Content = new StreamContent(gZipStream);
+                result.Content = new StreamContent(stream);
+                return ResponseMessage(result);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+            
+
         }
         
     }
