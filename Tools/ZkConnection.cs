@@ -11,27 +11,23 @@ namespace WindowsStorageLayer.Tools
         
         public static readonly ZooKeeper ZkClient = new ZooKeeper("maplewish.cn:2181", 1500, null, true);
 
-        private static readonly int Counter = PeriodicTaskConfig.SetTimer();
+//        private static readonly int Counter = PeriodicTaskConfig.SetTimer();
         // TODO: specific machine on this
         private static ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost");
         
         public static IDatabaseAsync Db
         {
             get { return redis.GetDatabase(); }
-            set
-            {
-                throw new NotImplementedException();
-            }
         }
 
-        public static  async void Main(string[] args)
-        {
-           
-            var s = await ZkConnection.ZkClient.getDataAsync("/fs");
-            if (s == null)
-            {
-                Console.WriteLine("NIMASILE");
-            }
-        }
+//        public static  async void Main(string[] args)
+//        {
+//           
+//            var s = await ZkConnection.ZkClient.getDataAsync("/fs");
+//            if (s == null)
+//            {
+//                Console.WriteLine("NIMASILE");
+//            }
+//        }
     }
 }

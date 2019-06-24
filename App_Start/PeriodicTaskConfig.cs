@@ -64,10 +64,10 @@ namespace WindowsStorageLayer
             server.TotalSpace = 0;
             server.AvailableSpace = 0;
             zkNode = ZkConnection.ZkClient.createAsync("/fs/Node", server.ToByteArray(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL).GetAwaiter().GetResult();
-            using (StreamWriter outputFile = new StreamWriter("WriteLines.txt", true))
-            {
-                outputFile.WriteLine(zkNode);
-            }
+//            using (StreamWriter outputFile = new StreamWriter("WriteLines.txt", true))
+//            {
+//                outputFile.WriteLine(zkNode);
+//            }
             Runned = true;
             return 0;
         }
