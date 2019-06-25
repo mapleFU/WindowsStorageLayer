@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using org.apache.zookeeper;
 using StackExchange.Redis;
 
@@ -20,14 +21,13 @@ namespace WindowsStorageLayer.Tools
             get { return redis.GetDatabase(); }
         }
 
-//        public static  async void Main(string[] args)
-//        {
-//           
-//            var s = await ZkConnection.ZkClient.getDataAsync("/fs");
-//            if (s == null)
-//            {
-//                Console.WriteLine("NIMASILE");
-//            }
-//        }
+        // Pinvoke for API function
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetDiskFreeSpaceEx(string lpDirectoryName,
+        out ulong lpFreeBytesAvailable,
+        out ulong lpTotalNumberOfBytes,
+        out ulong lpTotalNumberOfFreeBytes);
+
     }
 }

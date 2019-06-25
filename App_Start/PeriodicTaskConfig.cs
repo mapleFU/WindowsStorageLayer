@@ -32,11 +32,14 @@ namespace WindowsStorageLayer
             // TODO: modify this host
             server.Host = "localhost";
             server.HttpPort = "8000";
-            server.TotalSpace = 0;
-            server.AvailableSpace = 0;
-//            MemoryStream mstream = new MemoryStream();
-//            CodedOutputStream cstream = new CodedOutputStream(mstream);
-//            server.WriteTo(cstream);
+            ulong s1, s2, s3;
+            ZkConnection.GetDiskFreeSpaceEx("C:", out s1, out s2, out s3);
+
+            server.TotalSpace = s2;
+            server.AvailableSpace = s3;
+            //            MemoryStream mstream = new MemoryStream();
+            //            CodedOutputStream cstream = new CodedOutputStream(mstream);
+            //            server.WriteTo(cstream);
             zkConn.setDataAsync(zkNode, server.ToByteArray()).GetAwaiter().GetResult();
             
 //            zkConn.setDataAsync();
@@ -61,8 +64,11 @@ namespace WindowsStorageLayer
             // TODO: modify this host
             server.Host = "localhost";
             server.HttpPort = "8000";
-            server.TotalSpace = 0;
-            server.AvailableSpace = 0;
+            ulong s1, s2, s3;
+            ZkConnection.GetDiskFreeSpaceEx("C:", out s1, out s2, out s3);
+            
+            server.TotalSpace = s2;
+            server.AvailableSpace = s3;
             zkNode = ZkConnection.ZkClient.createAsync("/fs/Node", server.ToByteArray(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL).GetAwaiter().GetResult();
 //            using (StreamWriter outputFile = new StreamWriter("WriteLines.txt", true))
 //            {
